@@ -4,12 +4,11 @@
 /** Подключаем классы моделей */
 include ("models.php");
 
-/** Модуль */
-// class ClassName
+/** Базовое объявление текстового поля */
+// class office_form
 // {
-    // var $form_presentation = [
-        // "some_field" => ["type"=>"text", "label_text" => "label_text"]
-    // ];
+//     var $form_presentation = [
+//         "name" => ["type"=>"text", "label_text" => "Наименование", "id" => "office_name", "r_" => "required", "sp_attr" => "autofocus"]
+//     ]; 
 // }
-
 ?>

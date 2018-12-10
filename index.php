@@ -5,19 +5,14 @@
 файл для соединения с бд,
 файл с функциями, файл маршрутизации
 */
-//Имя шаблона
-$TEMPLATE_NAME = "";
-//Соединение с бд
-$CONN = null;
-//Возможные сообщения
-$MESSAGE = "";
 
-//define('FPDF_FONTPATH','classes/fpdf/font/');
+if (isset($_POST) || isset($_GET) || isset($_FILES)) $input = array_merge($_GET, $_POST, $_FILES);
 
 /** Основные файлы */
 include ("settings.php");
 include ("classes/render/render.php");
-include ("classes/mssql/SqlConnection.php");
+include ("classes/mysqli/MySqlConnection.php"); //если mysql
+require_once("bdConnect.php");
 include ("functions.php");
 include ("routing.php");
 ?>

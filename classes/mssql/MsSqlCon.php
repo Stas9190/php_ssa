@@ -60,14 +60,14 @@ class MsSqlCon
 //Получение данных из бд
 class MsSqlCom
 {
-	var $conn //connection
+	var $conn; //connection
 	var $sql; //Запрос или массив запросов
 	var $type; //Тип запроса: null-обычный select; non_query-не возвращающие табличных значений; transaction-транзакции
 	var $params; //параметры
 	
 	function __construct()
 	{
-		$a = func_get_args()
+		$a = func_get_args();
 		$i = func_num_args();
 		switch($i)
 		{
@@ -107,7 +107,7 @@ class MsSqlCom
 				$sqlCommand = new MsSqlCom($conn, $sql, "non_query", $params);
 		*/
 		//Возвращаемый массив
-		$result = array()
+		$result = array();
 		//Получаем переменные класса
 		$conn = $this -> conn;
 		$sql = $this -> sql;

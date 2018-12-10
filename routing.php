@@ -3,7 +3,7 @@
 //Подлючение базового файла шаблона и подгрузка основного контента
 /*
 	Пример:
-	$act = isset($_GET['act']) ? $_GET['act'] : "";
+	$act = isset($input['act']) ? $input['act'] : "";
 	switch($act)
 	{
 		case "Some variable":

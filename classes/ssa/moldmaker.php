@@ -1,4 +1,5 @@
 <?php
+/** КРАЙНЯЯ ВЕРСИЯ 28.11.2018 */
 /** Создание формы на основании класса из forms.php */
 
 /** Формы */
@@ -26,7 +27,10 @@ class MoldMaker
     /** Конструирование формы создания */
     function CreateView()
     {
-        $form_presentation = $this -> _class -> form_presentation;
+        if (isset($this-> _class -> form_presentation))
+            $form_presentation = $this -> _class -> form_presentation;
+        else 
+            $form_presentation = $this -> _class -> form_presentation();
 
         $count = count($form_presentation);
 
@@ -43,18 +47,42 @@ class MoldMaker
             $middle = '<div class="box-body">';
             foreach ($form_presentation as $key => $val)
             {
+                $special_attribute =  isset($val['sp_attr']) ? $val['sp_attr'] : "";
+                $default_val = isset($val['default_val']) ? $val['default_val'] : "";
+                $a_ = isset($val['autofocus_']) ? $val['autofocus_'] : "";
+                $r_ = isset($val['required_']) ? $val['required_'] : "";
+                $id = isset($val['id']) ? $val['id'] : "";
                 if ($val["type"] == "text")
                 {
                     $middle .= '<div class="form-group">';
                     $middle .= '<label for='.$key.'>'.$val["label_text"].'</label>';
-                    $middle .= '<input type="'.$val["type"].'" name="'.$key.'" class="form-control" id="'.$key.'" autofocus required>';
-                    $middle .= '<input type="hidden" name="model_name" value='.$this -> _model_name.'>';
+                    $middle .= '<input type="'.$val["type"].'" name="'.$key.'" class="form-control" id="'.$id.'" value="'.$default_val.'" '.$special_attribute.' '.$a_.' '.$r_.'> ';
                     $middle .= '</div>';
+                }
+                if ($val["type"] == "textarea")
+                {
+                    $middle .= '<div class="form-group">';
+                    $middle .= '<label for='.$key.'>'.$val["label_text"].'</label>';
+                    $middle .= '<textarea name="'.$key.'" class="form-control" id="'.$id.'" '.$special_attribute.' '.$a_.' '.$r_.'>'.$default_val.'</textarea>';
+                    $middle .= '</div>';
+                }
+                else if ($val["type"] == "select_assoc")
+                {
+                    $middle .= '<select name="'.$key.'" id="'.$val["id"].'" class="'.$val["class"].'">';
+                    foreach ($val["data"] as $k => $v)
+                    {
+                        $middle .= '<option value="'.$k.'">'.$v.' | '.$k.'</option>';
+                    }
+                    $middle .= '</select>';
+                }
+                else if ($val["type"] == "hidden")
+                {
+                    $middle .= '<input type="'.$val["type"].'" name="'.$key.'" id="'.$key.'" value="'.$default_val.'">';
                 }
             }
             $middle .= '</div>';
             $middle .= '<div class="box-footer">';
-            $middle .= '<button type="submit" class="btn btn-primary" name="AddPostData">Добавить</button>';
+            $middle .= '<button type="submit" class="btn btn-primary" name="act" value="'.$this->_model_name.'">Добавить</button>';
             $middle .= '</div>';
 
             $bottom = '</form>' .
@@ -74,7 +102,10 @@ class MoldMaker
      /** Конструирование формы редактирования */
      function EditView($context, $unique_key = 'id')
      {
-        $form_presentation = $this -> _class -> form_presentation;
+        if (isset($this-> _class -> form_presentation))
+            $form_presentation = $this -> _class -> form_presentation;
+        else 
+            $form_presentation = $this -> _class -> form_presentation();
 
         $count = count($form_presentation);
 
@@ -92,18 +123,48 @@ class MoldMaker
             $middle .= '<input type="hidden" name="unique_id" value='.$context["data"][0][$unique_key].'>';
             foreach ($form_presentation as $key => $val)
             {
+                $special_attribute =  isset($val['sp_attr']) ? $val['sp_attr'] : "";
+                $a_ = isset($val['autofocus_']) ? $val['autofocus_'] : "";
+                $r_ = isset($val['required_']) ? $val['required_'] : "";
+                $id = isset($val['id']) ? $val['id'] : "";
+
                 if ($val["type"] == "text")
                 {
                     $middle .= '<div class="form-group">';
                     $middle .= '<label for='.$key.'>'.$val["label_text"].'</label>';
-                    $middle .= '<input type="'.$val["type"].'" name="'.$key.'" class="form-control" id="'.$key.'" value="'.$context["data"][0][$key].'" autofocus required>';
+                    $middle .= '<input type="'.$val["type"].'" name="'.$key.'" class="form-control" id="'.$id.'" value="'.$context["data"][0][$key].'" '.$special_attribute.' '.$a_.' '.$r_.'>';
                     $middle .= '</div>';
                 }
+                else if ($val["type"] == "select_assoc")
+                {
+                    $middle .= '<div class="form-group">';
+                    $middle .= '<label for='.$key.'>'.$val["label_text"].'</label>';
+                    $middle .= '<select name="'.$key.'" id="'.$id.'" class="'.$val["class"].'">';
+                    foreach ($val["data"] as $k => $v)
+                    {
+                        if ($k == $context["data"][0][$key])
+                            $middle .= '<option value="'.$k.'" selected>'.$v.'</option>';
+                        else
+                            $middle .= '<option value="'.$k.'">'.$v.'</option>';
+                    }
+                    $middle .= '</select>';
+                    $middle .= '</div>';
+                }
+                else if ($val["type"] == "textarea")
+                {
+                    $middle .= '<div class="form-group">';
+                    $middle .= '<label for='.$key.'>'.$val["label_text"].'</label>';
+                    $middle .= '<textarea name="'.$key.'" class="form-control" id="'.$id.'" '.$special_attribute.' '.$a_.' '.$r_.'>'.$context["data"][0][$key].'</textarea>';
+                    $middle .= '</div>';
+                }
+                else if ($val["type"] == "hidden")
+                {
+                    $middle .= '<input type="'.$val["type"].'" name="'.$key.'" id="'.$key.'" value="'.$context["data"][0][$key].'">';
+                }
             }
-            $middle .= '<input type="hidden" name="model_name" value='.$this -> _model_name.'>';
             $middle .= '</div>';
             $middle .= '<div class="box-footer">';
-            $middle .= '<button type="submit" class="btn btn-primary" name="EditPostData">Обновить</button>';
+            $middle .= '<button type="submit" class="btn btn-primary" name="act" value="'.$this -> _model_name.'">Обновить</button>';
             $middle .= '</div>';
 
             $bottom = '</form>' .
