@@ -75,12 +75,15 @@ class MoldMaker
                 }
                 else if ($val["type"] == "select_assoc")
                 {
+                    $middle .= '<div class="form-group">';
+                    $middle .= '<label for='.$key.'>'.$val["label_text"].'</label>';
                     $middle .= '<select name="'.$key.'" id="'.$val["id"].'" class="'.$val["class"].'">';
                     foreach ($val["data"] as $k => $v)
                     {
                         $middle .= '<option value="'.$k.'">'.$v.' | '.$k.'</option>';
                     }
                     $middle .= '</select>';
+                    $middle .= '</div>';
                 }
                 else if ($val["type"] == "hidden")
                 {
