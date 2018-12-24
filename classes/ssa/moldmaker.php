@@ -1,5 +1,5 @@
 <?php
-/** КРАЙНЯЯ ВЕРСИЯ 28.11.2018 */
+/** КРАЙНЯЯ ВЕРСИЯ 24.12.2018 */
 /** Создание формы на основании класса из forms.php */
 
 /** Формы */
@@ -64,6 +64,13 @@ class MoldMaker
                     $middle .= '<div class="form-group">';
                     $middle .= '<label for='.$key.'>'.$val["label_text"].'</label>';
                     $middle .= '<textarea name="'.$key.'" class="form-control" id="'.$id.'" '.$special_attribute.' '.$a_.' '.$r_.'>'.$default_val.'</textarea>';
+                    $middle .= '</div>';
+                }
+                if ($val["type"] == "password")
+                {
+                    $middle .= '<div class="form-group">';
+                    $middle .= '<label for='.$key.'>'.$val["label_text"].'</label>';
+                    $middle .= '<input type="'.$val["type"].'" name="'.$key.'" class="form-control" id="'.$id.'">';
                     $middle .= '</div>';
                 }
                 else if ($val["type"] == "select_assoc")
