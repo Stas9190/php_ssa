@@ -5,9 +5,9 @@ class ConnectDB
     static function connect()
     {
         /** Пример подключения к базе данных */
-        // $mySqlConnection = new MySqlConnection($GLOBALS["DATABASES"], "MySql");
-        // $CONN = $mySqlConnection -> OpenConnection();
-        // return $CONN;
+        // $DBConnection = new DBConnection($GLOBALS["DATABASES"], "MySql");
+        // $connectionObject = $DBConnection->Connect();
+        // return $connectionObject['connection'];
     }
 }
 ?>
