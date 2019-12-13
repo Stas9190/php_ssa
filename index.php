@@ -5,14 +5,17 @@
 файл для соединения с бд,
 файл с функциями, файл маршрутизации
 */
+ini_set('display_errors', 1);
+
+if (session_id() === "") {
+    session_start();
+}
 
 if (isset($_POST) || isset($_GET) || isset($_FILES)) $input = array_merge($_GET, $_POST, $_FILES);
 
-/** Основные файлы */
-include ("settings.php");
-include ("classes/render/render.php");
-include ("classes/mysqli/MySqlConnection.php"); //если mysql
-require_once("bdConnect.php");
-include ("functions.php");
-include ("routing.php");
-?>
+/** Настройки */
+include_once("settings.php");
+/** Функционал приложения */
+include_once("app.php");
+/** API клиента */
+include_once("client_api.php");

@@ -1,7 +1,9 @@
 <?php
 
+namespace ssa_files;
+
 /** Дополнительные функции, которые могут потребоваться */
-class AddFunc
+class ssa_files
 {
     //Переводим имя файла в транслит
     static function translit($str)
@@ -45,7 +47,7 @@ class AddFunc
             foreach ($files as $file) {
                 $file = str_replace('\\', '/', $file);
                 if (in_array(substr($file, strrpos($file, '/') + 1), array('.', '..')))
-                continue;
+                    continue;
 
                 $file = realpath($file);
                 $file = str_replace('\\', '/', $file);
@@ -78,19 +80,19 @@ class AddFunc
     static function copydirect($source, $dest, $over = false)
     {
         if (!is_dir($dest))
-        mkdir($dest);
+            mkdir($dest);
         if ($handle = opendir($source)) {
             while (false !== ($file = readdir($handle))) {
                 if ($file != '.' && $file != '..') {
                     $path = $source . '/' . $file;
                     if (is_file($path)) {
                         if (!is_file($dest . '/' . $file || $over))
-                        if (!@copy($path, $dest . '/' . $file)) {
-                            echo "('.$path.') Ошибка!!! ";
-                        }
+                            if (!@copy($path, $dest . '/' . $file)) {
+                                echo "('.$path.') Ошибка!!! ";
+                            }
                     } elseif (is_dir($path)) {
                         if (!is_dir($dest . '/' . $file))
-                        mkdir($dest . '/' . $file);
+                            mkdir($dest . '/' . $file);
                         self::copydirect($path, $dest . '/' . $file, $over);
                     }
                 }
@@ -105,6 +107,24 @@ class AddFunc
         if (file_exists($filename)) {
             unlink($filename);
         }
+    }
+
+    static function FileUpload($file, $uploaddir = "uploads/")
+    {
+        $link = "";
+        if (isset($file)) {
+            $file_name = time() . ssa_files::translit($file['name']);
+            $uploadfile = $uploaddir . basename($file_name);
+            if (move_uploaded_file($file['tmp_name'], $uploadfile)) {
+                $link = $uploadfile;
+            }
+        }
+
+        /**
+         * Ссылка на файл
+         * @var string
+         */
+        return $link;
     }
 
     // удаление директории
@@ -130,5 +150,19 @@ class AddFunc
 
         return rmdir($dir);
     }
+
+    // Прочитать содержимое текстового файла и вернуть json
+    static function readTxtFile($file, $sep = "\n", $json = true, $raw = false)
+    {
+        $file_content = file_get_contents($file);
+        ssa_files::delete_file($file);
+        if ($raw == true)
+            return $file_content;
+
+        $file_content_array = explode($sep, $file_content);
+        if (!$json)
+            return $file_content_array;
+
+        return json_encode($file_content_array);
+    }
 }
- 
