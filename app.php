@@ -10,11 +10,14 @@ include_once("models.php");
 include_once("ssa/classes/model_handler.php");
 // include_once("ssa/classes/moldmaker.php");
 include_once("ssa/classes/ssa_files.php");
+include_once("ssa/classes/query_builder/query_builder.php");
 
 use Render\Render;
 use DBConnection\Command;
 use ssa_files\ssa_files;
-use model_handler\model_handler;
+
+use QueryBuilder\SqlQueryBuilder;
+use QueryBuilder\TSqlQueryBuilder;
 
 class App
 {
@@ -22,12 +25,23 @@ class App
 
     function __construct()
     {
-        $this->human = new Models\Human();
     }
 
-    function def_function()
+    public function loadStart()
     {
-        $mh = new model_handler($this->human);
-        $mh->Create(['test', 'test2', 'test3']);
+        echo 'testing builder patternr<br>';
+        $this->makeQuery(new TSqlQueryBuilder);
+    }
+
+    private function makeQuery(SqlQueryBuilder $queryBuilder)
+    {
+        $query = $queryBuilder
+            ->select('users', ['name', 'email', 'password'])
+            ->limit(10)
+            ->where('age', 18, '>')
+            ->order(['id'])
+            ->getSql();
+
+        echo $query;
     }
 }
