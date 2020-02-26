@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * @author ShulgaSA
+ * @version 1.1.0
+ * @package DBConnection
+ */
+
 namespace DBConnection;
 
 use Exception;
@@ -10,6 +16,7 @@ class DBConnection
 {
     /**
      * Переменная с параметрами подключения к бд
+     * @var array
      */
     var $DATABASES;
     /**
@@ -41,7 +48,8 @@ class DBConnection
      * Запрещаем клонирование и десериализацию 
      * */
     protected function __clone()
-    { }
+    {
+    }
 
     public function __wakeup()
     {
@@ -74,39 +82,48 @@ class DBConnection
 
     /** 
      * Метод подключения к бд 
+     * @return array
      */
     public function Connect()
     {
         /**
          * Наименование профиля
+         * @var string
          */
         $Database = $this->DATABASES[$this->DATABASE_PROFILE_NAME]["NAME"];
         /**
          * Хост
+         * @var string
          */
         $serverName = $this->DATABASES[$this->DATABASE_PROFILE_NAME]["HOST"];
         /**
          * Кодировка
+         * @var string
          */
         $CharacterSet = $this->DATABASES[$this->DATABASE_PROFILE_NAME]["CHARSET"];
         /**
          * Имя пользователя
+         * @var string
          */
         $UID = $this->DATABASES[$this->DATABASE_PROFILE_NAME]["USER"];
         /**
          * Пароль
+         * @var string
          */
         $PWD = $this->DATABASES[$this->DATABASE_PROFILE_NAME]["PASSWORD"];
         /**
          * Драйвер
+         * @var string
          */
         $DRIVER = isset($this->DATABASES[$this->DATABASE_PROFILE_NAME]['DRIVER']) ? $this->DATABASES[$this->DATABASE_PROFILE_NAME]['DRIVER'] : "mysql";
         /**
          * Массив, в котором возвращается результат выполнения метода
+         * @var array
          */
         $result = array();
         /**
          * Создаем экземпляр класса для логирования
+         * @var Log
          */
         $Log = new Log();
 
@@ -126,7 +143,8 @@ class DBConnection
             }
 
             /**
-             *  Массив с настройками
+             * Массив с настройками
+             * @var  array
              */
             $settings = array();
 
@@ -144,6 +162,9 @@ class DBConnection
             }
             if ($DRIVER == 'dblib') {
                 $dsn = "{$DRIVER}:Driver={$DRIVER};host={$serverName};Database={$Database}";
+            }
+            if ($DRIVER == 'sqlsrv') {
+                $dsn = "{$DRIVER}:Server={$serverName};Database={$Database}";
             }
 
             /**
@@ -183,6 +204,8 @@ class DBConnection
 
     /**
      * Получаем доступные драйверы
+     * 
+     * @return array
      */
     function getDrivers()
     {
@@ -194,14 +217,17 @@ class Command
 {
     /**
      * Объект подключения
+     * @var object
      */
     var $conn;
     /**
      * Строка с запросом
+     * @var string
      */
     var $sql;
     /**
      * Массив с параметрами запроса
+     * @var array
      */
     var $params;
 
@@ -230,15 +256,21 @@ class Command
 
     /**
      * Метод, реализующий выполнение запросов выборки из бд
+     * 
+     * @return array
      */
     function Execute()
     {
         /**
          * Результирующая выборка
+         * 
+         * @var array
          */
         $result = array('status' => 0);
         /**
          * Параметры
+         * 
+         * @var array
          */
         $parms = $this->params != null ? $this->params : null;
         $Log = new Log();
@@ -283,13 +315,24 @@ class Command
         return $result;
     }
 
-    /** Методы для изменения кодировки */
+    /**
+     *  Метод для изменения кодировки строки ('Windows-1251 => UTF-8')
+     * @param string входная строка
+     * 
+     * @return string
+     */
 
     function changeEncodingArrayElementsTo1251($str)
     {
         return iconv('Windows-1251', 'UTF-8', $str);
     }
 
+    /**
+     *  Метод для изменения кодировки строки ('UTF-8 => Windows-1251')
+     * @param string входная строка
+     * 
+     * @return string
+     */
     function changeEncodingArrayElementsToUTF($str)
     {
         return iconv('UTF-8', 'Windows-1251', $str);
@@ -297,6 +340,8 @@ class Command
 
     /**
      * Метод для выполнения операций вставки, обновления и удаления данных из бд
+     * 
+     * @return array
      */
     function ExecuteNonQuery()
     {
@@ -356,10 +401,17 @@ class Command
 class Log
 {
 
+    /**
+     * Массив содержащий логи
+     * @var array
+     */
     var $log = array();
 
     /**
-     * Добавляем сообщение
+     * Добавляем сообщение В лог
+     * @param string @message текст лога
+     *
+     *  @return void
      */
     function Add($message)
     {
@@ -367,7 +419,9 @@ class Log
     }
 
     /**
-     * Получаем сообщение
+     * Возвращаем лог
+     * 
+     * @return array
      */
     function Get()
     {
@@ -376,6 +430,8 @@ class Log
 
     /**
      * Очищение лога
+     * 
+     * @return void
      */
     function Erase()
     {
@@ -384,6 +440,8 @@ class Log
 
     /**
      * Число строк
+     * 
+     * @return int
      */
     function Count()
     {
