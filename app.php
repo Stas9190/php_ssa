@@ -7,10 +7,9 @@
 include_once("ssa/classes/render/render.php");
 require_once("ssa/classes/db/db_connection.php");
 include_once("models.php");
-include_once("ssa/classes/model_handler.php");
-// include_once("ssa/classes/moldmaker.php");
+
 include_once("ssa/classes/ssa_files.php");
-include_once("ssa/classes/query_builder/query_builder.php");
+include_once("ssa/classes/model_handler/sql_generator/query_builder.php");
 
 use Render\Render;
 use DBConnection\Command;
@@ -27,9 +26,13 @@ class App
     {
     }
 
+    public function def_function()
+    {
+        $this->loadStart();
+    }
+
     public function loadStart()
     {
-        echo 'testing builder patternr<br>';
         $this->makeQuery(new TSqlQueryBuilder);
     }
 
@@ -43,6 +46,5 @@ class App
             ->getSql();
 
         echo $query;
-        echo 'new branch!';
     }
 }

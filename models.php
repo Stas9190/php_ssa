@@ -7,8 +7,6 @@
 
 namespace Models;
 
-include("ssa\classes\model_handler.php");
-
 use DBConnection\Command;
 use DBConnection\DBConnection;
 
