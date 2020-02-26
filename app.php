@@ -43,5 +43,6 @@ class App
             ->getSql();
 
         echo $query;
+        echo 'new branch';
     }
 }
