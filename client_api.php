@@ -9,7 +9,7 @@ $APP = new App();
 $get = parse_url($_SERVER['REQUEST_URI'], PHP_URL_QUERY);
 $url_path = explode('/', parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
 
-$method = 'loadStart';
+$method = 'def_function';
 $parms = null;
 
 if (isset($input['method']))

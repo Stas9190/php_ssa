@@ -1,31 +1,30 @@
 <?php
 
-/**
- * @author ShulgaSA
- * @version 1.0
- * @package DBConnection
- */
-
 namespace DBConnection;
 
+use Exception;
 use PDOException;
 
-/** 
- * Класс подключения к бд 
- */
+/** Подключения к бд */
 class DBConnection
 {
     /**
-     * Параметры подключения к бд 
-     * @var array
+     * Переменная с параметрами подключения к бд
      */
     var $DATABASES;
+    /**
+     * Имя профиля подключения к бд по умолчанию
+     */
+    var $DATABASE_PROFILE_NAME = "DEFAULT";
 
-    function __construct()
+    /**
+     * Статическое поле для хранения экземпляра объекта
+     */
+    private static $instances = [];
+
+    /** Конструктор класса */
+    protected function __construct($a, $i)
     {
-        $a = func_get_args();
-        $i = func_num_args();
-
         switch ($i) {
             case 1:
                 $this->DATABASES = $a[0];
@@ -38,47 +37,82 @@ class DBConnection
         }
     }
 
-    /**
-     * Метод реализующий подключение к базе
-     * 
-     * @return array
-     */
+    /** 
+     * Запрещаем клонирование и десериализацию 
+     * */
+    protected function __clone()
+    { }
 
-    function Connect()
+    public function __wakeup()
+    {
+        throw new Exception("Запрещена десериализация");
+    }
+
+    /** 
+     * Метод для получения экземпляра класса
+     */
+    public static function getInstance(): DBConnection
     {
         /**
-         * Имя базы данных
-         * @var string
+         * Получаем аргументы ф-ции
+         */
+        $a = \func_get_args();
+        /**
+         * Получаем кол-во аргументов ф-ции
+         */
+        $i = \func_num_args();
+        $dbc = static::class;
+        /** 
+         * Если экземпляр не существует, то создаем новый 
+         */
+        if (!isset(static::$instances[$dbc])) {
+            static::$instances[$dbc] = new static($a, $i);
+        }
+
+        return (static::$instances[$dbc]);
+    }
+
+    /** 
+     * Метод подключения к бд 
+     */
+    public function Connect()
+    {
+        /**
+         * Наименование профиля
          */
         $Database = $this->DATABASES[$this->DATABASE_PROFILE_NAME]["NAME"];
         /**
-         * Имя хоста базы данных
-         * @var string
+         * Хост
          */
         $serverName = $this->DATABASES[$this->DATABASE_PROFILE_NAME]["HOST"];
         /**
          * Кодировка
-         * @var string
          */
         $CharacterSet = $this->DATABASES[$this->DATABASE_PROFILE_NAME]["CHARSET"];
         /**
-         * Имя пользователя бд
-         * @var string
+         * Имя пользователя
          */
         $UID = $this->DATABASES[$this->DATABASE_PROFILE_NAME]["USER"];
         /**
-         * Пароль пользователя бд
-         * @var string
+         * Пароль
          */
         $PWD = $this->DATABASES[$this->DATABASE_PROFILE_NAME]["PASSWORD"];
         /**
-         * Драйвер, использующийся для подключения к бд
-         * @var string
+         * Драйвер
          */
         $DRIVER = isset($this->DATABASES[$this->DATABASE_PROFILE_NAME]['DRIVER']) ? $this->DATABASES[$this->DATABASE_PROFILE_NAME]['DRIVER'] : "mysql";
+        /**
+         * Массив, в котором возвращается результат выполнения метода
+         */
         $result = array();
+        /**
+         * Создаем экземпляр класса для логирования
+         */
         $Log = new Log();
 
+        /**
+         *  Проверяем наличие какого-либо драйвера 
+         */
         if (count($this->getDrivers()) > 0) {
 
             try {
@@ -91,8 +125,14 @@ class DBConnection
                 $result["status"] = 0;
             }
 
+            /**
+             *  Массив с настройками
+             */
             $settings = array();
 
+            /**
+             * В зависимости от указанного драйвера создаем строку подключения
+             */
             $result['driver'] = $DRIVER;
             if ($DRIVER == 'mysql') {
                 $dsn = "{$DRIVER}:dbname={$Database};host={$serverName}";
@@ -106,6 +146,9 @@ class DBConnection
                 $dsn = "{$DRIVER}:Driver={$DRIVER};host={$serverName};Database={$Database}";
             }
 
+            /**
+             *  Создаем подключение 
+             */
             if (isset($dsn)) {
                 try {
                     $dbh = new \PDO(
@@ -127,44 +170,44 @@ class DBConnection
             $result['status'] = 0;
         }
 
+        /** 
+         * Получаем лог 
+         */
         $result['log'] = $Log->Get();
 
+        /**
+         * Возвращаем результат
+         */
         return $result;
     }
 
     /**
-     * Метод получает список доступных драйверов бд на сервере
-     * 
-     * @return array
+     * Получаем доступные драйверы
      */
-
     function getDrivers()
     {
         return \PDO::getAvailableDrivers();
     }
 }
 
-/**
- * Класс реализующий исполнение запросов к бд
- */
 class Command
 {
     /**
-     * Объект подключенияя к бд
-     * @var object
+     * Объект подключения
      */
     var $conn;
     /**
-     * Текст запроса
-     * @var string
+     * Строка с запросом
      */
     var $sql;
     /**
-     * Параметры, передаваемые в запрос
-     * @var array
+     * Массив с параметрами запроса
      */
     var $params;
 
+    /**
+     * Конструктор, в котором подключаем аргументы
+     */
     function __construct()
     {
         $a = func_get_args();
@@ -186,22 +229,30 @@ class Command
     }
 
     /**
-     * Метод выполняющий получение выборки из таблиц бд
-     * 
-     * @return array
+     * Метод, реализующий выполнение запросов выборки из бд
      */
     function Execute()
     {
-        $result = array('status' => 0); //результирующая выборка
+        /**
+         * Результирующая выборка
+         */
+        $result = array('status' => 0);
+        /**
+         * Параметры
+         */
         $parms = $this->params != null ? $this->params : null;
         $Log = new Log();
 
+        /** Проверяем существует ли подключение к бд */
         $connection = $this->conn['connection'];
         if ($this->conn['status'] != 1) {
             $result['status'] = 0;
             return $result;
         }
 
+        /**
+         * Подготовавливаем запрос, привязываем параметры, и исполняем
+         */
         try {
             $stmt = $connection->prepare($this->sql);
             if ($stmt->execute($parms)) {
@@ -226,27 +277,18 @@ class Command
             $result['log'] = $Log;
         }
 
+        /**
+         * Возвращаем результат
+         */
         return $result;
     }
 
-    /**
-     * Изменение кодировки строки ('Windows-1251 => UTF-8)
-     * @param string входная строка
-     * 
-     * @return string
-     */
+    /** Методы для изменения кодировки */
 
     function changeEncodingArrayElementsTo1251($str)
     {
         return iconv('Windows-1251', 'UTF-8', $str);
     }
-
-    /**
-     * Изменение кодировки строки ('UTF-8 => Windows-1251)
-     * @param string входная строка
-     * 
-     * @return string
-     */
 
     function changeEncodingArrayElementsToUTF($str)
     {
@@ -254,24 +296,41 @@ class Command
     }
 
     /**
-     * Метод выполняющий обновление, вставку, удалени информации в бд
-     * 
-     * @return array
+     * Метод для выполнения операций вставки, обновления и удаления данных из бд
      */
     function ExecuteNonQuery()
     {
+        /**
+         * Результат
+         */
         $result = array('status' => 0);
+        /**
+         * Параметры
+         */
         $parms = $this->params != null ? $this->params : null;
         $Log = new Log();
 
+        /**
+         *  Если драйвер odbc, то перекодируем 
+         */
         if ($this->conn['driver'] == 'odbc')
             $parms = array_map(array($this, 'changeEncodingArrayElementsToUTF'), $parms);
 
+        /** 
+         * Получаем объект подключения
+         */
         $connection = $this->conn['connection'];
 
+        /**
+         *  Статус 
+         */
         $result['status'] = $this->conn['status'] == 1 ? 1 : 0;
         if ($result['status'] == 0) return $result;
 
+
+        /**
+         * Подготавливаем запрос и выполняем
+         */
         try {
             $stmt = $connection->prepare($this->sql);
 
@@ -284,101 +343,39 @@ class Command
             $Log->Add($e->getMessage());
         }
         $result['log'] = $Log->Get();
-        return $result;
-    }
-
-    /**
-     * Метод выполняющий хранимые процедуры sql-сервера
-     * 
-     * @return array
-     */
-
-    function Call()
-    {
-        $result = array('status' => 0);
-        $parms = $this->params != null ? $this->params : null;
-        $Log = new Log();
-
-        if ($this->conn['driver'] == 'odbc' && count($parms) > 0)
-            $parms = array_map(array($this, 'changeEncodingArrayElementsToUTF'), $parms);
-
-        $result['status'] = $this->conn['status'] == 1 ? 1 : 0;
-        if ($result['status'] == 0) return $result;
-
-        $connection = $this->conn['connection'];
-
-        try {
-            $stmt = $connection->prepare($this->sql);
-            $trxType = "G";
-            $whse = "2125";
-            $item = "601301561111000";
-            $loc = "125-1";
-            $lot = "J000025065_1607";
-
-            $stmt->bindParam(':TrxType', $trxType, \PDO::PARAM_STR);
-            $stmt->bindParam(':Whse', $whse, \PDO::PARAM_STR);
-            $stmt->bindParam(':Item', $item, \PDO::PARAM_STR);
-            $stmt->bindParam(':Loc', $loc, \PDO::PARAM_STR);
-            $stmt->bindParam(':Lot', $lot, \PDO::PARAM_STR);
-
-            if ($stmt->execute())
-                $result['status'] = 1;
-
-            // $out = '';
-            // $stmt->bindColumn(1, $out, \PDO::PARAM_STR);
-            // $stmt->fetch(\PDO::FETCH_BOUND);
-
-            // $result['out'] = $out;
-
-            $stmt = null;
-            $connection = null;
-        } catch (PDOException $e) {
-            $Log->Add($e->getMessage());
-        }
-        if ($this->conn['driver'] == 'odbc')
-            $result['log'] = array_map(array($this, 'changeEncodingArrayElementsTo1251'), $Log->Get());
-
+        /**
+         * Возвращаем результат
+         */
         return $result;
     }
 }
 
 /**
- * Класс логирования
+ * Класс для логирования
  */
 class Log
 {
-    /**
-     * Массив содержащий логи
-     * @var array
-     */
+
     var $log = array();
 
     /**
-     * Метод добавляет сообщение в лог
-     * @param string @message текст лога
-     * @return void
+     * Добавляем сообщение
      */
-
     function Add($message)
     {
         array_push($this->log, $message);
     }
 
     /**
-     * Метод возвращает лог
-     * 
-     * @return array
+     * Получаем сообщение
      */
-
     function Get()
     {
         return $this->log;
     }
 
     /**
-     * Метод очищает лог
-     * 
-     * @return void
+     * Очищение лога
      */
     function Erase()
     {
@@ -386,11 +383,8 @@ class Log
     }
 
     /**
-     * Метод получает число строк лога
-     * 
-     * @return int
+     * Число строк
      */
-
     function Count()
     {
         return count($this->log);
