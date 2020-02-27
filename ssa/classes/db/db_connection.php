@@ -329,7 +329,7 @@ class Command
 
     /**
      *  Метод для изменения кодировки строки ('UTF-8 => Windows-1251')
-     * @param string входная строка
+     * @param string $str входная строка
      * 
      * @return string
      */
